@@ -107,6 +107,66 @@ const Index = () => {
     { name: 'ИталКомпани', quality: 90, price: 70, delivery: 75 }
   ];
 
+  const expirationItems = [
+    { 
+      product: 'Молоко 3.2%', 
+      quantity: '24 л', 
+      expiryDate: '15 ноя', 
+      daysLeft: 1, 
+      status: 'critical',
+      supplier: 'ФермаПродукт'
+    },
+    { 
+      product: 'Сливки 33%', 
+      quantity: '12 л', 
+      expiryDate: '16 ноя', 
+      daysLeft: 2, 
+      status: 'warning',
+      supplier: 'ФермаПродукт'
+    },
+    { 
+      product: 'Говядина охл.', 
+      quantity: '18 кг', 
+      expiryDate: '18 ноя', 
+      daysLeft: 4, 
+      status: 'warning',
+      supplier: 'МясоПрайм'
+    },
+    { 
+      product: 'Лосось свежий', 
+      quantity: '8 кг', 
+      expiryDate: '17 ноя', 
+      daysLeft: 3, 
+      status: 'warning',
+      supplier: 'ОкеанФреш'
+    },
+    { 
+      product: 'Салат айсберг', 
+      quantity: '15 шт', 
+      expiryDate: '16 ноя', 
+      daysLeft: 2, 
+      status: 'warning',
+      supplier: 'ФермаПродукт'
+    },
+    { 
+      product: 'Сыр пармезан', 
+      quantity: '5 кг', 
+      expiryDate: '22 ноя', 
+      daysLeft: 8, 
+      status: 'good',
+      supplier: 'ИталКомпани'
+    }
+  ];
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'critical': return { bg: 'bg-red-500/10', text: 'text-red-500', border: 'border-red-500' };
+      case 'warning': return { bg: 'bg-amber-500/10', text: 'text-amber-500', border: 'border-amber-500' };
+      case 'good': return { bg: 'bg-green-500/10', text: 'text-green-500', border: 'border-green-500' };
+      default: return { bg: 'bg-gray-500/10', text: 'text-gray-500', border: 'border-gray-500' };
+    }
+  };
+
   const getUrgencyColor = (urgency: string) => {
     switch (urgency) {
       case 'high': return 'bg-red-500';
@@ -350,49 +410,101 @@ const Index = () => {
           </Card>
         </div>
 
-        <Card className="animate-fade-in" style={{ animationDelay: '300ms' }}>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Icon name="Users" size={24} className="text-primary" />
-              Поставщики
-            </CardTitle>
-            <CardDescription>Топ поставщиков по объему заказов</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {suppliers.map((supplier, index) => (
-                <div key={index} className="flex items-center justify-between p-4 rounded-lg border hover:shadow-md transition-all duration-200">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-                      <Icon name="Store" size={24} className="text-primary" />
-                    </div>
-                    <div>
-                      <div className="font-semibold">{supplier.name}</div>
-                      <div className="text-sm text-muted-foreground">{supplier.category}</div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-8">
-                    <div className="text-center">
-                      <div className="text-2xl font-bold">{supplier.orders}</div>
-                      <div className="text-xs text-muted-foreground">заказов</div>
-                    </div>
-                    <div className="text-center">
-                      <div className="flex items-center gap-1">
-                        <Icon name="Star" size={16} className="text-amber-500 fill-amber-500" />
-                        <span className="font-semibold">{supplier.rating}</span>
-                      </div>
-                      <div className="text-xs text-muted-foreground">рейтинг</div>
-                    </div>
-                    <div className="text-center">
-                      <div className="font-semibold">{supplier.avgDelivery}</div>
-                      <div className="text-xs text-muted-foreground">доставка</div>
-                    </div>
-                  </div>
+        <div className="grid gap-6 lg:grid-cols-2 mb-8">
+          <Card className="animate-fade-in" style={{ animationDelay: '300ms' }}>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="flex items-center gap-2">
+                    <Icon name="Clock" size={24} className="text-accent" />
+                    Сроки хранения
+                  </CardTitle>
+                  <CardDescription>Товары требующие внимания</CardDescription>
                 </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+                <Badge variant="destructive" className="text-xs">
+                  <Icon name="AlertTriangle" size={12} className="mr-1" />
+                  {expirationItems.filter(i => i.status === 'critical').length} критичных
+                </Badge>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {expirationItems.map((item, index) => {
+                  const colors = getStatusColor(item.status);
+                  return (
+                    <div key={index} className={`p-4 rounded-lg border-l-4 ${colors.border} ${colors.bg} hover:shadow-md transition-all duration-200`}>
+                      <div className="flex items-start justify-between mb-2">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="font-semibold">{item.product}</span>
+                            <Badge variant="outline" className="text-xs">{item.quantity}</Badge>
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            Поставщик: {item.supplier}
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className={`text-lg font-bold ${colors.text}`}>{item.daysLeft}д</div>
+                          <div className="text-xs text-muted-foreground">{item.expiryDate}</div>
+                        </div>
+                      </div>
+                      {item.status === 'critical' && (
+                        <div className="flex items-center gap-2 mt-3 pt-3 border-t border-red-200">
+                          <Icon name="AlertCircle" size={14} className="text-red-500" />
+                          <span className="text-xs text-red-600 font-medium">Срочно использовать или списать</span>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="animate-fade-in" style={{ animationDelay: '350ms' }}>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Icon name="Users" size={24} className="text-primary" />
+                Поставщики
+              </CardTitle>
+              <CardDescription>Топ поставщиков по объему заказов</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {suppliers.map((supplier, index) => (
+                  <div key={index} className="flex items-center justify-between p-4 rounded-lg border hover:shadow-md transition-all duration-200">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                        <Icon name="Store" size={24} className="text-primary" />
+                      </div>
+                      <div>
+                        <div className="font-semibold">{supplier.name}</div>
+                        <div className="text-sm text-muted-foreground">{supplier.category}</div>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-8">
+                      <div className="text-center">
+                        <div className="text-2xl font-bold">{supplier.orders}</div>
+                        <div className="text-xs text-muted-foreground">заказов</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="flex items-center gap-1">
+                          <Icon name="Star" size={16} className="text-amber-500 fill-amber-500" />
+                          <span className="font-semibold">{supplier.rating}</span>
+                        </div>
+                        <div className="text-xs text-muted-foreground">рейтинг</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="font-semibold">{supplier.avgDelivery}</div>
+                        <div className="text-xs text-muted-foreground">доставка</div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   );
