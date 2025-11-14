@@ -1,13 +1,16 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Icon from '@/components/ui/icon';
 import { Button } from '@/components/ui/button';
 import { LineChart, Line, BarChart, Bar, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+import NotificationPanel from '@/components/NotificationPanel';
+import { toast } from 'sonner';
 
 const Index = () => {
   const [selectedPeriod, setSelectedPeriod] = useState('week');
+  const [autoNotifications, setAutoNotifications] = useState(true);
 
   const metrics = [
     { 
@@ -167,6 +170,54 @@ const Index = () => {
     }
   };
 
+  useEffect(() => {
+    if (!autoNotifications) return;
+
+    const checkExpirations = () => {
+      const criticalItems = expirationItems.filter(item => item.daysLeft <= 1);
+      const warningItems = expirationItems.filter(item => item.daysLeft > 1 && item.daysLeft <= 3);
+
+      if (criticalItems.length > 0) {
+        toast.error('Критично! Истекают сроки годности', {
+          description: `${criticalItems.length} товаров требуют срочного внимания`,
+          duration: 5000,
+        });
+      }
+
+      if (warningItems.length > 0) {
+        toast.warning('Внимание! Приближаются сроки годности', {
+          description: `${warningItems.length} товаров истекут через 2-3 дня`,
+          duration: 4000,
+        });
+      }
+    };
+
+    const checkLowStock = () => {
+      const lowStockItems = aiPredictions.filter(item => item.urgency === 'high');
+      
+      if (lowStockItems.length > 0) {
+        toast.info('Низкий запас товаров', {
+          description: `AI рекомендует срочно заказать ${lowStockItems.length} позиций`,
+          duration: 4000,
+        });
+      }
+    };
+
+    const initialTimeout = setTimeout(() => {
+      checkExpirations();
+      checkLowStock();
+    }, 3000);
+
+    const expirationInterval = setInterval(checkExpirations, 3600000);
+    const stockInterval = setInterval(checkLowStock, 7200000);
+
+    return () => {
+      clearTimeout(initialTimeout);
+      clearInterval(expirationInterval);
+      clearInterval(stockInterval);
+    };
+  }, [autoNotifications, expirationItems, aiPredictions]);
+
   const getUrgencyColor = (urgency: string) => {
     switch (urgency) {
       case 'high': return 'bg-red-500';
@@ -191,13 +242,24 @@ const Index = () => {
               </div>
             </div>
             <div className="flex items-center gap-3">
+              <NotificationPanel />
+              <Button 
+                variant={autoNotifications ? "default" : "outline"} 
+                size="sm"
+                onClick={() => {
+                  setAutoNotifications(!autoNotifications);
+                  toast.success(
+                    autoNotifications ? 'Автоуведомления отключены' : 'Автоуведомления включены',
+                    { duration: 2000 }
+                  );
+                }}
+              >
+                <Icon name={autoNotifications ? "BellRing" : "BellOff"} size={16} className="mr-2" />
+                {autoNotifications ? 'Авто' : 'Выкл'}
+              </Button>
               <Button variant="outline" size="sm">
                 <Icon name="Download" size={16} className="mr-2" />
                 Экспорт
-              </Button>
-              <Button size="sm">
-                <Icon name="Settings" size={16} className="mr-2" />
-                Настройки
               </Button>
             </div>
           </div>
