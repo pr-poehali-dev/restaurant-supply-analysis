@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Icon from '@/components/ui/icon';
 import { Button } from '@/components/ui/button';
+import { LineChart, Line, BarChart, Bar, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 
 const Index = () => {
   const [selectedPeriod, setSelectedPeriod] = useState('week');
@@ -87,6 +88,23 @@ const Index = () => {
     { name: 'Овощи и фрукты', spent: 512830, percent: 18, color: 'bg-accent' },
     { name: 'Молочные продукты', spent: 398450, percent: 14, color: 'bg-primary/70' },
     { name: 'Прочее', spent: 463330, percent: 16, color: 'bg-muted' }
+  ];
+
+  const purchaseTrends = [
+    { date: '1 Нояб', meat: 95000, fish: 68000, vegetables: 52000, dairy: 38000 },
+    { date: '2 Нояб', meat: 102000, fish: 71000, vegetables: 48000, dairy: 42000 },
+    { date: '3 Нояб', meat: 88000, fish: 65000, vegetables: 55000, dairy: 40000 },
+    { date: '4 Нояб', meat: 115000, fish: 78000, vegetables: 61000, dairy: 45000 },
+    { date: '5 Нояб', meat: 108000, fish: 74000, vegetables: 58000, dairy: 43000 },
+    { date: '6 Нояб', meat: 125000, fish: 82000, vegetables: 64000, dairy: 48000 },
+    { date: '7 Нояб', meat: 118000, fish: 79000, vegetables: 60000, dairy: 46000 }
+  ];
+
+  const supplierComparison = [
+    { name: 'МясоПрайм', quality: 92, price: 78, delivery: 88 },
+    { name: 'ОкеанФреш', quality: 95, price: 82, delivery: 94 },
+    { name: 'ФермаПродукт', quality: 88, price: 85, delivery: 90 },
+    { name: 'ИталКомпани', quality: 90, price: 70, delivery: 75 }
   ];
 
   const getUrgencyColor = (urgency: string) => {
@@ -257,7 +275,82 @@ const Index = () => {
           </Card>
         </div>
 
-        <Card className="animate-fade-in" style={{ animationDelay: '200ms' }}>
+        <div className="grid gap-6 lg:grid-cols-2 mb-8">
+          <Card className="animate-fade-in" style={{ animationDelay: '200ms' }}>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Icon name="TrendingUp" size={24} className="text-primary" />
+                Тренды закупок
+              </CardTitle>
+              <CardDescription>Динамика расходов по категориям за неделю</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={300}>
+                <AreaChart data={purchaseTrends}>
+                  <defs>
+                    <linearGradient id="colorMeat" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.8}/>
+                      <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
+                    </linearGradient>
+                    <linearGradient id="colorFish" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="hsl(var(--secondary))" stopOpacity={0.8}/>
+                      <stop offset="95%" stopColor="hsl(var(--secondary))" stopOpacity={0}/>
+                    </linearGradient>
+                    <linearGradient id="colorVeg" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="hsl(var(--accent))" stopOpacity={0.8}/>
+                      <stop offset="95%" stopColor="hsl(var(--accent))" stopOpacity={0}/>
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                  <XAxis dataKey="date" stroke="hsl(var(--muted-foreground))" fontSize={12} />
+                  <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} />
+                  <Tooltip 
+                    contentStyle={{ 
+                      backgroundColor: 'hsl(var(--card))', 
+                      border: '1px solid hsl(var(--border))',
+                      borderRadius: '8px'
+                    }} 
+                  />
+                  <Area type="monotone" dataKey="meat" stroke="hsl(var(--primary))" fillOpacity={1} fill="url(#colorMeat)" name="Мясо" />
+                  <Area type="monotone" dataKey="fish" stroke="hsl(var(--secondary))" fillOpacity={1} fill="url(#colorFish)" name="Рыба" />
+                  <Area type="monotone" dataKey="vegetables" stroke="hsl(var(--accent))" fillOpacity={1} fill="url(#colorVeg)" name="Овощи" />
+                </AreaChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+
+          <Card className="animate-fade-in" style={{ animationDelay: '250ms' }}>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Icon name="BarChart2" size={24} className="text-secondary" />
+                Сравнение поставщиков
+              </CardTitle>
+              <CardDescription>Оценка по качеству, цене и доставке</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={supplierComparison}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                  <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" fontSize={12} />
+                  <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} />
+                  <Tooltip 
+                    contentStyle={{ 
+                      backgroundColor: 'hsl(var(--card))', 
+                      border: '1px solid hsl(var(--border))',
+                      borderRadius: '8px'
+                    }} 
+                  />
+                  <Legend />
+                  <Bar dataKey="quality" fill="hsl(var(--primary))" name="Качество" radius={[8, 8, 0, 0]} />
+                  <Bar dataKey="price" fill="hsl(var(--secondary))" name="Цена" radius={[8, 8, 0, 0]} />
+                  <Bar dataKey="delivery" fill="hsl(var(--accent))" name="Доставка" radius={[8, 8, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+        </div>
+
+        <Card className="animate-fade-in" style={{ animationDelay: '300ms' }}>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Icon name="Users" size={24} className="text-primary" />
